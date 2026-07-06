@@ -1,0 +1,34 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: login-service
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/ecommerce_db
+    username: ecommerce
+    password: ecommerce123
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+jwt:
+  secret: ThisIsMyVerySecretKeyForJWTAuthentication123456789
+  expiration: 86400000
+
+logging:
+  level:
+    root: INFO
+    org.springframework.security: DEBUG

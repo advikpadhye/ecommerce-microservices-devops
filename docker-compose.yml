@@ -1,0 +1,24 @@
+version: '3.9'
+
+services:
+
+  mysql:
+    image: mysql:8.4
+    container_name: ecommerce-mysql
+
+    restart: always
+
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ecommerce_db
+      MYSQL_USER: ecommerce
+      MYSQL_PASSWORD: ecommerce123
+
+    ports:
+      - "3306:3306"
+
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+volumes:
+  mysql-data:
