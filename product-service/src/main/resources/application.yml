@@ -6,7 +6,7 @@ spring:
     name: product-service
 
   datasource:
-    url: jdbc:mysql://localhost:3306/ecommerce_db
+    url: jdbc:mysql://ecommerce-mysql:3306/ecommerce_db
     username: ecommerce
     password: ecommerce123
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -27,3 +27,9 @@ springdoc:
 
   swagger-ui:
     path: /swagger-ui.html
+      
+  management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info    

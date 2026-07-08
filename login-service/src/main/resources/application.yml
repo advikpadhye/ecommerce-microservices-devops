@@ -6,7 +6,7 @@ spring:
     name: login-service
 
   datasource:
-    url: jdbc:mysql://localhost:3306/ecommerce_db
+    url:  jdbc:mysql://ecommerce-mysql:3306/ecommerce_db
     username: ecommerce
     password: ecommerce123
 
