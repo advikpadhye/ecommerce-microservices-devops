@@ -2,9 +2,11 @@ pipeline {
     agent any
 
     environment {
-        LOGIN_IMAGE = "login-service:latest"
-        PRODUCT_IMAGE = "product-service:latest"
-        GATEWAY_IMAGE = "api-gateway:latest"
+        DOCKER_HUB = "jyotidp"
+
+        LOGIN_IMAGE = "${DOCKER_HUB}/login-service:latest"
+        PRODUCT_IMAGE = "${DOCKER_HUB}/product-service:latest"
+        GATEWAY_IMAGE = "${DOCKER_HUB}/api-gateway:latest"
     }
 
     stages {
@@ -41,6 +43,7 @@ pipeline {
 
         stage('Build Docker Images') {
             steps {
+
                 dir('login-service') {
                     sh 'docker build -t $LOGIN_IMAGE .'
                 }
@@ -52,10 +55,39 @@ pipeline {
                 dir('api-gateway') {
                     sh 'docker build -t $GATEWAY_IMAGE .'
                 }
+
             }
         }
 
-        stage('Verify Docker Images') {
+        stage('Docker Login') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )
+                ]) {
+                    sh '''
+                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                    '''
+                }
+            }
+        }
+
+        stage('Push Images') {
+            steps {
+
+                sh 'docker push $LOGIN_IMAGE'
+
+                sh 'docker push $PRODUCT_IMAGE'
+
+                sh 'docker push $GATEWAY_IMAGE'
+
+            }
+        }
+
+        stage('Verify Images') {
             steps {
                 sh 'docker images'
             }
@@ -63,12 +95,17 @@ pipeline {
     }
 
     post {
+        always {
+            sh 'docker logout || true'
+            cleanWs()
+        }
+
         success {
-            echo 'Build completed successfully.'
+            echo 'Pipeline executed successfully.'
         }
 
         failure {
-            echo 'Build failed.'
+            echo 'Pipeline failed.'
         }
     }
 }
