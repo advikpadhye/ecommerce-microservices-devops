@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.pravin</groupId>
 	<artifactId>api-gateway</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.1-SNAPSHOT</version>
 	<name/>
 	<description/>
 	<url/>
@@ -75,5 +75,23 @@
 			</plugin>
 		</plugins>
 	</build>
+
+    <distributionManagement>
+
+    <repository>
+        <id>nexus-releases</id>
+        <name>Nexus Release Repository</name>
+        <url>http://65.2.124.179:8081/repository/maven-releases/</url>
+    </repository>
+
+    <snapshotRepository>
+        <id>nexus-snapshots</id>
+        <name>Nexus Snapshot Repository</name>
+        <url>http://65.2.124.179:8081/repository/maven-snapshots/</url>
+    </snapshotRepository>
+
+    </distributionManagement>
+
+
 
 </project>

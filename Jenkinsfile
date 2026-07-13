@@ -4,7 +4,7 @@ pipeline {
     environment {
         DOCKER_HUB = "jyotidp"
 
-        LOGIN_IMAGE = "${DOCKER_HUB}/login-service:latest"
+        LOGIN_IMAGE   = "${DOCKER_HUB}/login-service:latest"
         PRODUCT_IMAGE = "${DOCKER_HUB}/product-service:latest"
         GATEWAY_IMAGE = "${DOCKER_HUB}/api-gateway:latest"
     }
@@ -17,10 +17,32 @@ pipeline {
             }
         }
 
+        stage('SonarQube Analysis') {
+            steps {
+                dir('login-service') {
+                    withSonarQubeEnv('SonarQube') {
+                        sh '''
+                            mvn clean verify sonar:sonar \
+                            -Dsonar.projectKey=login-service \
+                            -Dsonar.projectName=login-service
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
         stage('Build Login Service') {
             steps {
                 dir('login-service') {
-                    sh 'mvn clean package -DskipTests'
+                    sh 'mvn clean deploy -DskipTests'
                 }
             }
         }
@@ -28,7 +50,7 @@ pipeline {
         stage('Build Product Service') {
             steps {
                 dir('product-service') {
-                    sh 'mvn clean package -DskipTests'
+                    sh 'mvn clean deploy -DskipTests'
                 }
             }
         }
@@ -36,7 +58,7 @@ pipeline {
         stage('Build API Gateway') {
             steps {
                 dir('api-gateway') {
-                    sh 'mvn clean package -DskipTests'
+                    sh 'mvn clean deploy -DskipTests'
                 }
             }
         }
@@ -55,7 +77,6 @@ pipeline {
                 dir('api-gateway') {
                     sh 'docker build -t $GATEWAY_IMAGE .'
                 }
-
             }
         }
 
@@ -68,20 +89,21 @@ pipeline {
                         passwordVariable: 'DOCKER_PASS'
                     )
                 ]) {
+
                     sh '''
-                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                        echo "$DOCKER_PASS" | docker login \
+                        -u "$DOCKER_USER" \
+                        --password-stdin
                     '''
                 }
             }
         }
 
-        stage('Push Images') {
+        stage('Push Docker Images') {
             steps {
 
                 sh 'docker push $LOGIN_IMAGE'
-
                 sh 'docker push $PRODUCT_IMAGE'
-
                 sh 'docker push $GATEWAY_IMAGE'
 
             }
@@ -92,20 +114,23 @@ pipeline {
                 sh 'docker images'
             }
         }
+
     }
 
     post {
+
         always {
             sh 'docker logout || true'
             cleanWs()
         }
 
         success {
-            echo 'Pipeline executed successfully.'
+            echo 'CI/CD Pipeline Completed Successfully.'
         }
 
         failure {
-            echo 'Pipeline failed.'
+            echo 'Pipeline Failed.'
         }
+
     }
 }
